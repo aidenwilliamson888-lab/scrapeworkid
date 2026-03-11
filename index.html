@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<title>📊 OpenLibrary Trending Scraper → Work ID</title>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.scraper-card { max-width:1200px; width:100%; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); border-radius:40px; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,0.4); border:2px solid rgba(255,170,51,0.5); }
+.header { background:linear-gradient(135deg, #102a36 0%, #1d3e4f 100%); padding:30px; text-align:center; border-bottom:5px solid #ffaa33; }
+.header h1 { color:white; font-size:2.5rem; font-weight:800; margin-bottom:10px; }
+.header p { color:#ffaa33; font-size:1.2rem; }
+.content { padding:30px; }
+.two-column { display:grid; grid-template-columns:1fr 1fr; gap:30px; }
+.panel { background:#f8faff; padding:25px; border-radius:25px; border:2px solid #e0e8f0; }
+.panel h2 { color:#0b1f2c; margin-bottom:20px; font-size:1.5rem; border-left:8px solid #ffaa33; padding-left:15px; }
+.btn-primary { background:#ffaa33; border:none; border-radius:60px; padding:15px 30px; font-size:1.2rem; font-weight:800; color:#0b1f2c; cursor:pointer; box-shadow:0 6px 0 #b87d1f; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; margin-right:10px; }
+.btn-primary:hover { transform:translateY(-3px); box-shadow:0 9px 0 #b87d1f; background:#ffb852; }
+.btn-primary:active { transform:translateY(3px); box-shadow:0 3px 0 #b87d1f; }
+.btn-secondary { background:#1d3e4f; border:none; border-radius:60px; padding:15px 30px; font-size:1.2rem; font-weight:800; color:white; cursor:pointer; box-shadow:0 6px 0 #0b1f2c; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; }
+.btn-secondary:hover { transform:translateY(-3px); box-shadow:0 9px 0 #0b1f2c; background:#2a5066; }
+.btn-secondary:active { transform:translateY(3px); box-shadow:0 3px 0 #0b1f2c; }
+.result-box { background:white; border-radius:15px; padding:20px; margin-top:20px; border:2px dashed #ffaa33; min-height:200px; }
+.result-box textarea { width:100%; height:200px; border:none; font-family:monospace; font-size:0.9rem; padding:10px; background:#f5f5f5; border-radius:10px; resize:vertical; }
+.result-box textarea:focus { outline:2px solid #ffaa33; }
+.status { padding:15px; border-radius:10px; background:#e5f0ff; margin:15px 0; }
+.book-list { max-height:300px; overflow-y:auto; margin-top:15px; }
+.book-item { display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee; }
+.book-item:hover { background:#fff0d4; }
+.book-item img { width:40px; height:60px; object-fit:cover; border-radius:5px; }
+.book-info { flex:1; }
+.book-title { font-weight:600; color:#0b1f2c; }
+.book-author { font-size:0.85rem; color:#666; }
+.book-id { font-size:0.8rem; color:#ffaa33; font-family:monospace; }
+.loading { text-align:center; padding:30px; }
+.loading i { font-size:2rem; color:#ffaa33; margin-bottom:10px; }
+.footer { background:#0b1f2c; padding:20px; color:#8ba0b0; text-align:center; border-top:2px solid #ffaa33; }
+.footer a { color:#ffaa33; text-decoration:none; }
+.copy-btn { background:#f0f0f0; border:none; border-radius:5px; padding:5px 10px; cursor:pointer; margin-left:10px; }
+.copy-btn:hover { background:#ffaa33; color:white; }
+</style>
+</head>
+<body>
+<div class="scraper-card">
+<div class="header">
+<h1><i class="fas fa-spider"></i> OpenLibrary Trending Scraper</h1>
+<p>Ambil Work ID dari halaman trending sekarang → siap untuk PDF Generator</p>
+</div>
+
+<div class="content">
+<div class="two-column">
+<!-- KIRI: TRENDING BOOKS -->
+<div class="panel">
+<h2><i class="fas fa-fire" style="color:#ffaa33;"></i> Trending Books Now</h2>
+<div id="trendingContainer">
+<div class="loading" id="loadingTrending">
+<i class="fas fa-spinner fa-pulse"></i>
+<p>Mengambil data trending...</p>
+</div>
+</div>
+<button class="btn-primary" id="refreshTrending" style="margin-top:15px;">
+<i class="fas fa-sync-alt"></i> Refresh Trending
+</button>
+<button class="btn-secondary" id="copyAllIds">
+<i class="fas fa-copy"></i> Copy All Work IDs
+</button>
+</div>
+
+<!-- KANAN: HASIL WORK ID -->
+<div class="panel">
+<h2><i class="fas fa-barcode"></i> Work ID Results</h2>
+<div class="result-box">
+<textarea id="workIdOutput" placeholder="Work ID akan muncul di sini...&#10;OL554603W&#10;OL27448W&#10;OL66592W"></textarea>
+</div>
+<div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
+<button class="btn-primary" id="copyToClipboard">
+<i class="fas fa-copy"></i> Copy to Clipboard
+</button>
+<button class="btn-secondary" id="clearResults">
+<i class="fas fa-trash"></i> Clear
+</button>
+</div>
+<div id="countInfo" style="margin-top:10px; font-size:0.9rem; color:#666;"></div>
+</div>
+</div>
+
+<!-- BAGIAN BAWAH: PREVIEW UNTUK PDF GENERATOR -->
+<div style="margin-top:30px; background:#fff0d4; padding:20px; border-radius:20px;">
+<h3 style="color:#0b1f2c; margin-bottom:15px;"><i class="fas fa-file-pdf"></i> Kirim ke PDF Generator</h3>
+<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+<button class="btn-primary" id="sendToGenerator">
+<i class="fas fa-arrow-right"></i> Gunakan Work ID untuk Generate PDF
+</button>
+<span style="color:#666;">Work ID akan otomatis terisi di kolom PDF Generator</span>
+</div>
+</div>
+</div>
+
+<div class="footer">
+<i class="fas fa-open-library"></i> Data real-time dari <a href="https://openlibrary.org/trending/now" target="_blank">OpenLibrary Trending</a> • Work ID siap pakai
+</div>
+</div>
+
+<script>
+// ===== ELEMENTS =====
+const trendingContainer = document.getElementById('trendingContainer');
+const workIdOutput = document.getElementById('workIdOutput');
+const countInfo = document.getElementById('countInfo');
+const refreshBtn = document.getElementById('refreshTrending');
+const copyAllBtn = document.getElementById('copyAllIds');
+const copyToClipboardBtn = document.getElementById('copyToClipboard');
+const clearResultsBtn = document.getElementById('clearResults');
+const sendToGeneratorBtn = document.getElementById('sendToGenerator');
+
+// ===== VARIABEL GLOBAL =====
+let trendingBooks = [];
+let workIds = [];
+
+// ===== FUNGSI FETCH TRENDING =====
+async function fetchTrending() {
+trendingContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Mengambil data trending...</p></div>';
+
+try {
+// Fetch halaman trending
+const response = await fetch('https://openlibrary.org/trending/now');
+const html = await response.text();
+
+// Parse Work ID dari HTML
+const parser = new DOMParser();
+const doc = parser.parseFromString(html, 'text/html');
+
+// Cari semua link yang mengarah ke /works/OL...
+const links = doc.querySelectorAll('a[href*="/works/OL"]');
+const bookItems = [];
+
+links.forEach(link => {
+const href = link.getAttribute('href');
+const match = href.match(/\/works\/(OL\d+[A-Z]?)/);
+if (match && match[1]) {
+const workId = match[1];
+const title = link.textContent.trim() || 'Unknown Title';
+
+// Cari author (biasanya di parent)
+let author = 'Unknown Author';
+const parent = link.closest('li') || link.closest('div');
+if (parent) {
+const authorEl = parent.querySelector('a[href*="/authors/"]');
+if (authorEl) {
+author = authorEl.textContent.trim();
+}
+}
+
+// Cari gambar cover
+let coverUrl = 'https://covers.openlibrary.org/b/id/12389591-S.jpg';
+const img = parent?.querySelector('img');
+if (img && img.src) {
+coverUrl = img.src;
+}
+
+// Cek duplikat
+if (!bookItems.some(b => b.workId === workId)) {
+bookItems.push({
+workId,
+title,
+author,
+coverUrl
+});
+}
+}
+});
+
+trendingBooks = bookItems;
+
+// Update tampilan
+if (trendingBooks.length > 0) {
+let html = '<div class="book-list">';
+trendingBooks.slice(0, 20).forEach(book => {
+html += `
+<div class="book-item">
+<img src="${book.coverUrl}" onerror="this.src='https://covers.openlibrary.org/b/id/12389591-S.jpg'">
+<div class="book-info">
+<div class="book-title">${book.title}</div>
+<div class="book-author">${book.author}</div>
+<div class="book-id">${book.workId}</div>
+</div>
+</div>
+`;
+});
+html += '</div>';
+trendingContainer.innerHTML = html;
+
+// Update work IDs
+workIds = trendingBooks.map(b => b.workId);
+updateWorkIdOutput();
+} else {
+trendingContainer.innerHTML = '<div class="status">❌ Tidak ada Work ID ditemukan. Coba refresh.</div>';
+}
+
+} catch (error) {
+console.error(error);
+trendingContainer.innerHTML = `<div class="status">❌ Error: ${error.message}</div>`;
+}
+}
+
+// ===== UPDATE TEXTAREA =====
+function updateWorkIdOutput() {
+workIdOutput.value = workIds.join('\n');
+countInfo.innerHTML = `📊 ${workIds.length} Work ID ditemukan`;
+}
+
+// ===== COPY TO CLIPBOARD =====
+function copyToClipboard(text) {
+navigator.clipboard.writeText(text).then(() => {
+alert('✅ Work ID berhasil di-copy!');
+}).catch(() => {
+alert('❌ Gagal copy, coba manual');
+});
+}
+
+// ===== EVENT LISTENERS =====
+refreshBtn.addEventListener('click', fetchTrending);
+
+copyAllBtn.addEventListener('click', () => {
+if (workIds.length > 0) {
+copyToClipboard(workIds.join('\n'));
+} else {
+alert('Tidak ada Work ID untuk di-copy');
+}
+});
+
+copyToClipboardBtn.addEventListener('click', () => {
+if (workIdOutput.value.trim()) {
+copyToClipboard(workIdOutput.value);
+} else {
+alert('Tidak ada teks untuk di-copy');
+}
+});
+
+clearResultsBtn.addEventListener('click', () => {
+workIdOutput.value = '';
+workIds = [];
+trendingBooks = [];
+countInfo.innerHTML = '📊 0 Work ID';
+});
+
+sendToGeneratorBtn.addEventListener('click', () => {
+if (workIds.length > 0) {
+// Simpan ke localStorage untuk diakses PDF Generator
+localStorage.setItem('trendingWorkIds', JSON.stringify(workIds));
+alert(`✅ ${workIds.length} Work ID disimpan! Buka PDF Generator dan klik "Ambil dari Trending"`);
+// Buka PDF Generator di tab baru (ganti URL sesuai kebutuhan)
+window.open('generator.html', '_blank');
+} else {
+alert('Tidak ada Work ID untuk dikirim');
+}
+});
+
+// ===== INITIAL LOAD =====
+fetchTrending();
+</script>
+</body>
+</html>
