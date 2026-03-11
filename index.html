@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-<title>📊 OpenLibrary Work ID Collector</title>
+<title>📚 OpenLibrary Work ID Collector - All Categories</title>
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
-.scraper-card { max-width:1200px; width:100%; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); border-radius:40px; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,0.4); border:2px solid rgba(255,170,51,0.5); }
+.scraper-card { max-width:1400px; width:100%; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); border-radius:40px; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,0.4); border:2px solid rgba(255,170,51,0.5); }
 .header { background:linear-gradient(135deg, #102a36 0%, #1d3e4f 100%); padding:30px; text-align:center; border-bottom:5px solid #ffaa33; }
 .header h1 { color:white; font-size:2.5rem; font-weight:800; margin-bottom:10px; }
 .header p { color:#ffaa33; font-size:1.2rem; }
 .content { padding:30px; }
 .panel { background:#f8faff; padding:25px; border-radius:25px; border:2px solid #e0e8f0; margin-bottom:20px; }
 .panel h2 { color:#0b1f2c; margin-bottom:20px; font-size:1.5rem; border-left:8px solid #ffaa33; padding-left:15px; }
-.btn-primary { background:#ffaa33; border:none; border-radius:60px; padding:12px 25px; font-size:1.1rem; font-weight:800; color:#0b1f2c; cursor:pointer; box-shadow:0 6px 0 #b87d1f; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; margin-right:10px; }
+.btn-primary { background:#ffaa33; border:none; border-radius:60px; padding:12px 25px; font-size:1.1rem; font-weight:800; color:#0b1f2c; cursor:pointer; box-shadow:0 6px 0 #b87d1f; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; }
 .btn-primary:hover { transform:translateY(-3px); box-shadow:0 9px 0 #b87d1f; background:#ffb852; }
 .btn-primary:active { transform:translateY(3px); box-shadow:0 3px 0 #b87d1f; }
 .btn-secondary { background:#1d3e4f; border:none; border-radius:60px; padding:12px 25px; font-size:1.1rem; font-weight:800; color:white; cursor:pointer; box-shadow:0 6px 0 #0b1f2c; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; }
@@ -24,84 +24,115 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 .btn-secondary:active { transform:translateY(3px); box-shadow:0 3px 0 #0b1f2c; }
 .result-box { background:white; border-radius:15px; padding:20px; margin-top:20px; border:2px dashed #ffaa33; }
 .result-box textarea { width:100%; height:250px; border:none; font-family:monospace; font-size:0.9rem; padding:10px; background:#f5f5f5; border-radius:10px; resize:vertical; }
-.book-list { max-height:400px; overflow-y:auto; margin-top:15px; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:10px; }
-.book-item { display:flex; align-items:center; gap:10px; padding:10px; background:white; border-radius:10px; border:1px solid #eee; }
-.book-item:hover { background:#fff0d4; border-color:#ffaa33; }
+.book-list { max-height:500px; overflow-y:auto; margin-top:15px; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:10px; }
+.book-item { display:flex; align-items:center; gap:10px; padding:10px; background:white; border-radius:10px; border:1px solid #eee; cursor:pointer; transition:all 0.2s; }
+.book-item:hover { background:#fff0d4; border-color:#ffaa33; transform:translateY(-2px); box-shadow:0 5px 10px rgba(0,0,0,0.1); }
+.book-item.selected { background:#ffaa33; border-color:#b87d1f; }
 .book-item img { width:40px; height:60px; object-fit:cover; border-radius:5px; }
 .book-info { flex:1; }
 .book-title { font-weight:600; color:#0b1f2c; font-size:0.9rem; }
 .book-author { font-size:0.8rem; color:#666; }
-.book-id { font-size:0.75rem; color:#ffaa33; font-family:monospace; }
+.book-id { font-size:0.75rem; color:#ffaa33; font-family:monospace; font-weight:bold; }
+.book-year { font-size:0.7rem; color:#999; margin-top:2px; }
 .loading { text-align:center; padding:30px; }
 .loading i { font-size:2rem; color:#ffaa33; margin-bottom:10px; }
 .footer { background:#0b1f2c; padding:20px; color:#8ba0b0; text-align:center; border-top:2px solid #ffaa33; }
-.filter-bar { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
-.filter-bar select, .filter-bar input { padding:10px; border:2px solid #ccddee; border-radius:8px; font-size:0.9rem; }
+.category-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:10px; margin-bottom:20px; max-height:300px; overflow-y:auto; padding:10px; background:#f0f5fa; border-radius:15px; }
+.category-item { padding:8px 12px; background:white; border-radius:30px; cursor:pointer; border:2px solid transparent; transition:all 0.2s; text-align:center; font-size:0.9rem; }
+.category-item:hover { background:#ffaa33; color:#0b1f2c; transform:scale(1.02); }
+.category-item.selected { background:#ffaa33; border-color:#b87d1f; font-weight:bold; }
+.filter-bar { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; align-items:center; background:#fff0d4; padding:20px; border-radius:20px; }
+.stats { display:flex; gap:15px; margin:15px 0; flex-wrap:wrap; }
+.stat-box { background:#f0f0f0; padding:10px 15px; border-radius:10px; flex:1; text-align:center; }
+.stat-number { font-size:1.5rem; font-weight:bold; color:#ffaa33; }
+.stat-label { font-size:0.8rem; color:#666; }
 </style>
 </head>
 <body>
 <div class="scraper-card">
 <div class="header">
-<h1><i class="fas fa-database"></i> OpenLibrary Work ID Collector</h1>
-<p>Ambil Work ID dari berbagai kategori (100% work)</p>
+<h1><i class="fas fa-layer-group"></i> OpenLibrary Category Collector</h1>
+<p>Pilih kategori → Dapatkan Work ID (Bisa multi-pilih)</p>
 </div>
 
 <div class="content">
-<div class="panel">
-<h2><i class="fas fa-filter"></i> Pilih Koleksi Buku</h2>
-
+<!-- FILTER BAR -->
 <div class="filter-bar">
-<select id="categorySelect">
-<option value="everything">📚 Semua Buku (terbaru)</option>
-<option value="fiction">📖 Fiksi</option>
-<option value="science">🔬 Sains</option>
-<option value="history">🏛️ Sejarah</option>
-<option value="biography">📜 Biografi</option>
-<option value="fantasy">🐉 Fantasi</option>
-<option value="mystery">🕵️ Misteri</option>
-<option value="romance">❤️ Romance</option>
-<option value="children">🧸 Anak-anak</option>
-</select>
-
-<input type="number" id="limit" value="50" min="10" max="100" step="10" style="width:100px;">
-
+<div style="flex:2;">
+<label style="font-weight:bold; display:block; margin-bottom:5px;">📌 Pilih Kategori (klik untuk multi-pilih):</label>
+<div class="category-grid" id="categoryGrid">
+<!-- Categories will be populated by JS -->
+</div>
+</div>
+<div style="flex:1; min-width:250px;">
+<div style="margin-bottom:15px;">
+<label style="font-weight:bold;">🔢 Jumlah per kategori:</label>
+<input type="number" id="limit" value="30" min="10" max="100" step="5" style="width:100%; padding:10px; margin-top:5px; border:2px solid #ccddee; border-radius:8px;">
+</div>
+<div style="display:flex; gap:10px; flex-wrap:wrap;">
 <button class="btn-primary" id="fetchBtn">
-<i class="fas fa-search"></i> Ambil Work ID
+<i class="fas fa-search"></i> Fetch Books
 </button>
-
-<button class="btn-secondary" id="nextBtn" disabled>
-<i class="fas fa-arrow-right"></i> Halaman Selanjutnya
+<button class="btn-secondary" id="clearCategoriesBtn">
+<i class="fas fa-undo"></i> Clear All
 </button>
 </div>
+</div>
+</div>
 
+<!-- STATS -->
+<div class="stats">
+<div class="stat-box">
+<div class="stat-number" id="totalBooks">0</div>
+<div class="stat-label">Books Found</div>
+</div>
+<div class="stat-box">
+<div class="stat-number" id="selectedCount">0</div>
+<div class="stat-label">Selected Work IDs</div>
+</div>
+<div class="stat-box">
+<div class="stat-number" id="uniqueCount">0</div>
+<div class="stat-label">Unique IDs</div>
+</div>
+</div>
+
+<!-- BOOK LIST -->
 <div id="resultContainer">
 <div class="loading" id="loading">
 <i class="fas fa-spinner fa-pulse"></i>
-<p>Klik "Ambil Work ID" untuk memulai</p>
-</div>
+<p>Pilih kategori dan klik Fetch Books</p>
 </div>
 </div>
 
-<div class="panel">
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-<h2 style="border-left:8px solid #ffaa33; padding-left:15px; margin:0;"><i class="fas fa-barcode"></i> Work ID List</h2>
+<!-- WORK ID COLLECTION -->
+<div class="panel" style="margin-top:20px;">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+<h2 style="border-left:8px solid #ffaa33; padding-left:15px; margin:0;"><i class="fas fa-barcode"></i> Work ID Collection</h2>
 <div>
 <button class="btn-secondary" id="copyBtn">
-<i class="fas fa-copy"></i> Copy
+<i class="fas fa-copy"></i> Copy All
 </button>
 <button class="btn-secondary" id="clearBtn">
 <i class="fas fa-trash"></i> Clear
+</button>
+<button class="btn-secondary" id="selectAllBtn">
+<i class="fas fa-check-double"></i> Select All
+</button>
+<button class="btn-secondary" id="removeDuplicatesBtn">
+<i class="fas fa-filter"></i> Remove Duplicates
 </button>
 </div>
 </div>
 
 <div class="result-box">
-<textarea id="workIdOutput" placeholder="Work ID akan muncul di sini..."></textarea>
+<textarea id="workIdOutput" placeholder="Work IDs akan muncul di sini..."></textarea>
 </div>
-<div id="countInfo" style="margin-top:10px; font-size:0.9rem; color:#666; text-align:right;"></div>
+<div style="display:flex; justify-content:space-between; margin-top:10px;">
+<span id="countInfo" style="color:#666;">📊 Total: 0 Work IDs</span>
+</div>
 </div>
 
-<!-- Kirim ke PDF Generator -->
+<!-- Send to PDF Generator -->
 <div style="background:#fff0d4; padding:20px; border-radius:20px; margin-top:20px;">
 <h3 style="color:#0b1f2c; margin-bottom:15px;"><i class="fas fa-file-pdf"></i> Kirim ke PDF Generator</h3>
 <button class="btn-primary" id="sendBtn">
@@ -111,55 +142,177 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 </div>
 
 <div class="footer">
-<i class="fas fa-open-library"></i> Data dari OpenLibrary Search API • Work ID siap pakai
+<i class="fas fa-open-library"></i> Data dari OpenLibrary Search • Klik buku untuk mengoleksi Work ID
 </div>
 </div>
 
 <script>
+// ===== DAFTAR KATEGORI LENGKAP =====
+const categories = [
+{ id: '*', name: '📚 All Books', emoji: '📚' },
+{ id: 'fiction', name: '📖 Fiction', emoji: '📖' },
+{ id: 'nonfiction', name: '📘 Non-Fiction', emoji: '📘' },
+{ id: 'business', name: '💼 Business', emoji: '💼' },
+{ id: 'economics', name: '📊 Economics', emoji: '📊' },
+{ id: 'marketing', name: '📈 Marketing', emoji: '📈' },
+{ id: 'finance', name: '💰 Finance', emoji: '💰' },
+{ id: 'entrepreneurship', name: '🚀 Entrepreneurship', emoji: '🚀' },
+{ id: 'leadership', name: '👥 Leadership', emoji: '👥' },
+{ id: 'management', name: '📋 Management', emoji: '📋' },
+{ id: 'science', name: '🔬 Science', emoji: '🔬' },
+{ id: 'physics', name: '⚛️ Physics', emoji: '⚛️' },
+{ id: 'chemistry', name: '🧪 Chemistry', emoji: '🧪' },
+{ id: 'biology', name: '🧬 Biology', emoji: '🧬' },
+{ id: 'mathematics', name: '📐 Mathematics', emoji: '📐' },
+{ id: 'technology', name: '💻 Technology', emoji: '💻' },
+{ id: 'computer_science', name: '🖥️ Computer Science', emoji: '🖥️' },
+{ id: 'programming', name: '👨‍💻 Programming', emoji: '👨‍💻' },
+{ id: 'artificial_intelligence', name: '🤖 AI', emoji: '🤖' },
+{ id: 'history', name: '🏛️ History', emoji: '🏛️' },
+{ id: 'biography', name: '📜 Biography', emoji: '📜' },
+{ id: 'autobiography', name: '✍️ Autobiography', emoji: '✍️' },
+{ id: 'memoir', name: '📝 Memoir', emoji: '📝' },
+{ id: 'philosophy', name: '🤔 Philosophy', emoji: '🤔' },
+{ id: 'psychology', name: '🧠 Psychology', emoji: '🧠' },
+{ id: 'self_help', name: '🌟 Self Help', emoji: '🌟' },
+{ id: 'motivation', name: '⚡ Motivation', emoji: '⚡' },
+{ id: 'spirituality', name: '🕊️ Spirituality', emoji: '🕊️' },
+{ id: 'religion', name: '⛪ Religion', emoji: '⛪' },
+{ id: 'art', name: '🎨 Art', emoji: '🎨' },
+{ id: 'music', name: '🎵 Music', emoji: '🎵' },
+{ id: 'film', name: '🎬 Film', emoji: '🎬' },
+{ id: 'photography', name: '📸 Photography', emoji: '📸' },
+{ id: 'design', name: '🎯 Design', emoji: '🎯' },
+{ id: 'architecture', name: '🏗️ Architecture', emoji: '🏗️' },
+{ id: 'education', name: '📚 Education', emoji: '📚' },
+{ id: 'teaching', name: '🍎 Teaching', emoji: '🍎' },
+{ id: 'language', name: '🗣️ Language', emoji: '🗣️' },
+{ id: 'linguistics', name: '🔤 Linguistics', emoji: '🔤' },
+{ id: 'literature', name: '📖 Literature', emoji: '📖' },
+{ id: 'poetry', name: '📝 Poetry', emoji: '📝' },
+{ id: 'drama', name: '🎭 Drama', emoji: '🎭' },
+{ id: 'classics', name: '🏺 Classics', emoji: '🏺' },
+{ id: 'fantasy', name: '🐉 Fantasy', emoji: '🐉' },
+{ id: 'science_fiction', name: '👽 Sci-Fi', emoji: '👽' },
+{ id: 'mystery', name: '🕵️ Mystery', emoji: '🕵️' },
+{ id: 'thriller', name: '🔪 Thriller', emoji: '🔪' },
+{ id: 'horror', name: '👻 Horror', emoji: '👻' },
+{ id: 'romance', name: '❤️ Romance', emoji: '❤️' },
+{ id: 'young_adult', name: '🧒 Young Adult', emoji: '🧒' },
+{ id: 'children', name: '🧸 Children', emoji: '🧸' },
+{ id: 'picture_books', name: '🖼️ Picture Books', emoji: '🖼️' },
+{ id: 'comics', name: '💬 Comics', emoji: '💬' },
+{ id: 'graphic_novels', name: '📖 Graphic Novels', emoji: '📖' },
+{ id: 'manga', name: '🇯🇵 Manga', emoji: '🇯🇵' },
+{ id: 'health', name: '💪 Health', emoji: '💪' },
+{ id: 'fitness', name: '🏋️ Fitness', emoji: '🏋️' },
+{ id: 'medicine', name: '💊 Medicine', emoji: '💊' },
+{ id: 'nutrition', name: '🥗 Nutrition', emoji: '🥗' },
+{ id: 'cooking', name: '🍳 Cooking', emoji: '🍳' },
+{ id: 'food', name: '🍕 Food', emoji: '🍕' },
+{ id: 'travel', name: '✈️ Travel', emoji: '✈️' },
+{ id: 'geography', name: '🌍 Geography', emoji: '🌍' },
+{ id: 'sports', name: '⚽ Sports', emoji: '⚽' },
+{ id: 'games', name: '🎮 Games', emoji: '🎮' },
+{ id: 'hobbies', name: '🎨 Hobbies', emoji: '🎨' },
+{ id: 'crafts', name: '✂️ Crafts', emoji: '✂️' },
+{ id: 'gardening', name: '🌱 Gardening', emoji: '🌱' },
+{ id: 'pets', name: '🐾 Pets', emoji: '🐾' },
+{ id: 'animals', name: '🐘 Animals', emoji: '🐘' },
+{ id: 'nature', name: '🌿 Nature', emoji: '🌿' },
+{ id: 'environment', name: '🌎 Environment', emoji: '🌎' },
+{ id: 'politics', name: '🏛️ Politics', emoji: '🏛️' },
+{ id: 'government', name: '⚖️ Government', emoji: '⚖️' },
+{ id: 'law', name: '⚖️ Law', emoji: '⚖️' },
+{ id: 'sociology', name: '👥 Sociology', emoji: '👥' },
+{ id: 'anthropology', name: '👣 Anthropology', emoji: '👣' },
+{ id: 'archaeology', name: '🏺 Archaeology', emoji: '🏺' },
+{ id: 'military', name: '🎖️ Military', emoji: '🎖️' },
+{ id: 'war', name: '⚔️ War', emoji: '⚔️' },
+{ id: 'engineering', name: '🔧 Engineering', emoji: '🔧' },
+{ id: 'electronics', name: '⚡ Electronics', emoji: '⚡' },
+{ id: 'robotics', name: '🤖 Robotics', emoji: '🤖' },
+{ id: 'automotive', name: '🚗 Automotive', emoji: '🚗' },
+{ id: 'aerospace', name: '🚀 Aerospace', emoji: '🚀' }
+];
+
 // ===== ELEMENTS =====
+const categoryGrid = document.getElementById('categoryGrid');
 const resultContainer = document.getElementById('resultContainer');
 const workIdOutput = document.getElementById('workIdOutput');
 const countInfo = document.getElementById('countInfo');
+const totalBooks = document.getElementById('totalBooks');
+const selectedCount = document.getElementById('selectedCount');
+const uniqueCount = document.getElementById('uniqueCount');
 const fetchBtn = document.getElementById('fetchBtn');
-const nextBtn = document.getElementById('nextBtn');
 const copyBtn = document.getElementById('copyBtn');
 const clearBtn = document.getElementById('clearBtn');
+const clearCategoriesBtn = document.getElementById('clearCategoriesBtn');
+const selectAllBtn = document.getElementById('selectAllBtn');
+const removeDuplicatesBtn = document.getElementById('removeDuplicatesBtn');
 const sendBtn = document.getElementById('sendBtn');
-const categorySelect = document.getElementById('categorySelect');
 const limitInput = document.getElementById('limit');
 
 // ===== VARIABEL =====
-let currentPage = 1;
+let selectedCategories = ['*']; // default semua buku
 let allWorkIds = [];
-let currentQuery = '';
+let currentBooks = [];
 
-// ===== FUNCTION FETCH =====
-async function fetchWorkIds(page = 1, append = false) {
-resultContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Mengambil data...</p></div>';
+// ===== RENDER KATEGORI =====
+function renderCategories() {
+let html = '';
+categories.forEach(cat => {
+const isSelected = selectedCategories.includes(cat.id) ? 'selected' : '';
+html += `<div class="category-item ${isSelected}" onclick="toggleCategory('${cat.id}')">${cat.emoji} ${cat.name}</div>`;
+});
+categoryGrid.innerHTML = html;
+}
 
-try {
-// Mapping kategori ke query
-const categoryMap = {
-'everything': '*',
-'fiction': 'fiction',
-'science': 'science',
-'history': 'history',
-'biography': 'biography',
-'fantasy': 'fantasy',
-'mystery': 'mystery',
-'romance': 'romance',
-'children': 'children'
+// ===== TOGGLE KATEGORI =====
+window.toggleCategory = function(catId) {
+if (catId === '*') {
+// Kalau pilih "All Books", reset ke hanya itu
+selectedCategories = ['*'];
+} else {
+// Hapus '*' dari selected kalau ada
+selectedCategories = selectedCategories.filter(id => id !== '*');
+
+// Toggle kategori
+const index = selectedCategories.indexOf(catId);
+if (index === -1) {
+selectedCategories.push(catId);
+} else {
+selectedCategories.splice(index, 1);
+}
+
+// Kalau kosong, kembalikan ke '*'
+if (selectedCategories.length === 0) {
+selectedCategories = ['*'];
+}
+}
+renderCategories();
 };
 
-const query = categoryMap[categorySelect.value];
-const limit = limitInput.value;
+// ===== CLEAR CATEGORIES =====
+clearCategoriesBtn.addEventListener('click', () => {
+selectedCategories = ['*'];
+renderCategories();
+});
 
-// URL API yang simple dan pasti jalan
-const url = `https://openlibrary.org/search.json?q=${query}&fields=key,title,author_name,first_publish_year,cover_i&limit=${limit}&page=${page}`;
+// ===== FETCH BOOKS =====
+async function fetchBooks() {
+resultContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Mencari buku...</p></div>';
+
+try {
+const limit = limitInput.value;
+let allBooks = [];
+
+// Loop setiap kategori yang dipilih
+for (const cat of selectedCategories) {
+const query = cat === '*' ? '*' : `subject:${cat}`;
+const url = `https://openlibrary.org/search.json?q=${query}&fields=key,title,author_name,first_publish_year,cover_i&limit=${limit}`;
 
 const response = await fetch(url);
-if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
 const data = await response.json();
 
 if (data.docs && data.docs.length > 0) {
@@ -168,20 +321,32 @@ workId: doc.key.replace('/works/', ''),
 title: doc.title || 'Unknown Title',
 author: doc.author_name ? doc.author_name[0] : 'Unknown Author',
 coverId: doc.cover_i,
-year: doc.first_publish_year || 'Unknown'
+year: doc.first_publish_year || 'Unknown',
+category: cat
 }));
+allBooks = [...allBooks, ...books];
+}
+}
+
+// Acak buku biar gak berurutan per kategori
+allBooks = allBooks.sort(() => Math.random() - 0.5);
+currentBooks = allBooks;
+totalBooks.innerHTML = allBooks.length;
 
 // Tampilkan buku
 let html = '<div class="book-list">';
-books.slice(0, 20).forEach(book => {
+allBooks.slice(0, 50).forEach(book => {
 const coverUrl = book.coverId ? `https://covers.openlibrary.org/b/id/${book.coverId}-S.jpg` : 'https://covers.openlibrary.org/b/id/12389591-S.jpg';
+const isSelected = allWorkIds.includes(book.workId) ? 'selected' : '';
+
 html += `
-<div class="book-item">
+<div class="book-item ${isSelected}" onclick="toggleWorkId('${book.workId}')">
 <img src="${coverUrl}" onerror="this.src='https://covers.openlibrary.org/b/id/12389591-S.jpg'">
 <div class="book-info">
 <div class="book-title">${book.title.substring(0, 60)}${book.title.length > 60 ? '...' : ''}</div>
-<div class="book-author">${book.author} (${book.year})</div>
+<div class="book-author">${book.author}</div>
 <div class="book-id">${book.workId}</div>
+<div class="book-year">📅 ${book.year}</div>
 </div>
 </div>
 `;
@@ -189,79 +354,97 @@ html += `
 html += '</div>';
 resultContainer.innerHTML = html;
 
-// Update Work IDs
-const newWorkIds = books.map(b => b.workId);
-
-if (append) {
-allWorkIds = [...new Set([...allWorkIds, ...newWorkIds])];
-} else {
-allWorkIds = newWorkIds;
-}
-
-updateOutput();
-
-// Pagination
-currentPage = page;
-currentQuery = query;
-nextBtn.disabled = books.length < limit;
-
-} else {
-resultContainer.innerHTML = '<div class="status">❌ Tidak ada data</div>';
-}
-
 } catch (error) {
 console.error(error);
 resultContainer.innerHTML = `<div class="status">❌ Error: ${error.message}</div>`;
 }
 }
 
+// ===== TOGGLE WORK ID =====
+window.toggleWorkId = function(workId) {
+const index = allWorkIds.indexOf(workId);
+if (index === -1) {
+allWorkIds.push(workId);
+} else {
+allWorkIds.splice(index, 1);
+}
+updateOutput();
+highlightSelected();
+};
+
+// ===== HIGHLIGHT =====
+function highlightSelected() {
+document.querySelectorAll('.book-item').forEach(item => {
+const idElem = item.querySelector('.book-id');
+if (idElem) {
+const workId = idElem.textContent.trim();
+if (allWorkIds.includes(workId)) {
+item.classList.add('selected');
+} else {
+item.classList.remove('selected');
+}
+}
+});
+}
+
 // ===== UPDATE OUTPUT =====
 function updateOutput() {
 workIdOutput.value = allWorkIds.join('\n');
-countInfo.innerHTML = `📊 Total: ${allWorkIds.length} Work ID unik`;
+countInfo.innerHTML = `📊 Total: ${allWorkIds.length} Work IDs`;
+selectedCount.innerHTML = allWorkIds.length;
+uniqueCount.innerHTML = [...new Set(allWorkIds)].length;
 }
 
 // ===== COPY =====
-function copyToClipboard() {
+copyBtn.addEventListener('click', () => {
 if (allWorkIds.length > 0) {
 navigator.clipboard.writeText(allWorkIds.join('\n')).then(() => {
-alert(`✅ ${allWorkIds.length} Work ID di-copy!`);
+alert(`✅ ${allWorkIds.length} Work IDs copied!`);
 });
 } else {
-alert('Tidak ada Work ID');
+alert('No Work IDs');
 }
-}
-
-// ===== EVENT =====
-fetchBtn.addEventListener('click', () => {
-currentPage = 1;
-fetchWorkIds(1, false);
 });
 
-nextBtn.addEventListener('click', () => {
-fetchWorkIds(currentPage + 1, true);
-});
-
-copyBtn.addEventListener('click', copyToClipboard);
-
+// ===== CLEAR =====
 clearBtn.addEventListener('click', () => {
-workIdOutput.value = '';
 allWorkIds = [];
-countInfo.innerHTML = '📊 Total: 0 Work ID';
+updateOutput();
+highlightSelected();
 });
 
+// ===== SELECT ALL =====
+selectAllBtn.addEventListener('click', () => {
+const currentIds = currentBooks.map(b => b.workId);
+allWorkIds = [...new Set([...allWorkIds, ...currentIds])];
+updateOutput();
+highlightSelected();
+});
+
+// ===== REMOVE DUPLICATES =====
+removeDuplicatesBtn.addEventListener('click', () => {
+allWorkIds = [...new Set(allWorkIds)];
+updateOutput();
+highlightSelected();
+alert('✅ Duplicates removed!');
+});
+
+// ===== SEND TO GENERATOR =====
 sendBtn.addEventListener('click', () => {
 if (allWorkIds.length > 0) {
 localStorage.setItem('trendingWorkIds', JSON.stringify(allWorkIds));
-alert(`✅ ${allWorkIds.length} Work ID disimpan! Buka PDF Generator dan gunakan.`);
+alert(`✅ ${allWorkIds.length} Work IDs saved!`);
 window.open('generator.html', '_blank');
 } else {
-alert('Tidak ada Work ID');
+alert('No Work IDs');
 }
 });
 
-// ===== LOAD PERTAMA =====
-fetchWorkIds(1, false);
+// ===== EVENT =====
+fetchBtn.addEventListener('click', fetchBooks);
+
+// ===== INIT =====
+renderCategories();
 </script>
 </body>
 </html>
