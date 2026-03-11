@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-<title>📊 OpenLibrary Trending Scraper → Work ID</title>
+<title>📊 OpenLibrary Trending Scraper - Manual URL</title>
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
@@ -17,17 +17,21 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 .two-column { display:grid; grid-template-columns:1fr 1fr; gap:30px; }
 .panel { background:#f8faff; padding:25px; border-radius:25px; border:2px solid #e0e8f0; }
 .panel h2 { color:#0b1f2c; margin-bottom:20px; font-size:1.5rem; border-left:8px solid #ffaa33; padding-left:15px; }
-.btn-primary { background:#ffaa33; border:none; border-radius:60px; padding:15px 30px; font-size:1.2rem; font-weight:800; color:#0b1f2c; cursor:pointer; box-shadow:0 6px 0 #b87d1f; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; margin-right:10px; }
+.url-input-area { background:#fff0d4; padding:20px; border-radius:15px; margin-bottom:20px; }
+.url-input-area label { font-weight:bold; color:#0b1f2c; display:block; margin-bottom:8px; }
+.url-input-area input { width:100%; padding:12px 15px; border:2px solid #ffaa33; border-radius:10px; font-size:1rem; margin-bottom:10px; }
+.url-input-area input:focus { outline:none; box-shadow:0 0 0 3px rgba(255,170,51,0.3); }
+.btn-primary { background:#ffaa33; border:none; border-radius:60px; padding:12px 25px; font-size:1.1rem; font-weight:800; color:#0b1f2c; cursor:pointer; box-shadow:0 6px 0 #b87d1f; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; margin-right:10px; }
 .btn-primary:hover { transform:translateY(-3px); box-shadow:0 9px 0 #b87d1f; background:#ffb852; }
 .btn-primary:active { transform:translateY(3px); box-shadow:0 3px 0 #b87d1f; }
-.btn-secondary { background:#1d3e4f; border:none; border-radius:60px; padding:15px 30px; font-size:1.2rem; font-weight:800; color:white; cursor:pointer; box-shadow:0 6px 0 #0b1f2c; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; }
+.btn-secondary { background:#1d3e4f; border:none; border-radius:60px; padding:12px 25px; font-size:1.1rem; font-weight:800; color:white; cursor:pointer; box-shadow:0 6px 0 #0b1f2c; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; }
 .btn-secondary:hover { transform:translateY(-3px); box-shadow:0 9px 0 #0b1f2c; background:#2a5066; }
 .btn-secondary:active { transform:translateY(3px); box-shadow:0 3px 0 #0b1f2c; }
-.result-box { background:white; border-radius:15px; padding:20px; margin-top:20px; border:2px dashed #ffaa33; min-height:200px; }
-.result-box textarea { width:100%; height:200px; border:none; font-family:monospace; font-size:0.9rem; padding:10px; background:#f5f5f5; border-radius:10px; resize:vertical; }
+.result-box { background:white; border-radius:15px; padding:20px; margin-top:20px; border:2px dashed #ffaa33; }
+.result-box textarea { width:100%; height:250px; border:none; font-family:monospace; font-size:0.9rem; padding:10px; background:#f5f5f5; border-radius:10px; resize:vertical; }
 .result-box textarea:focus { outline:2px solid #ffaa33; }
 .status { padding:15px; border-radius:10px; background:#e5f0ff; margin:15px 0; }
-.book-list { max-height:300px; overflow-y:auto; margin-top:15px; }
+.book-list { max-height:400px; overflow-y:auto; margin-top:15px; }
 .book-item { display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee; }
 .book-item:hover { background:#fff0d4; }
 .book-item img { width:40px; height:60px; object-fit:cover; border-radius:5px; }
@@ -39,61 +43,61 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 .loading i { font-size:2rem; color:#ffaa33; margin-bottom:10px; }
 .footer { background:#0b1f2c; padding:20px; color:#8ba0b0; text-align:center; border-top:2px solid #ffaa33; }
 .footer a { color:#ffaa33; text-decoration:none; }
-.copy-btn { background:#f0f0f0; border:none; border-radius:5px; padding:5px 10px; cursor:pointer; margin-left:10px; }
-.copy-btn:hover { background:#ffaa33; color:white; }
-.proxy-option { background:#fff0d4; padding:15px; border-radius:10px; margin-bottom:20px; }
-.proxy-option select { padding:8px; border-radius:5px; border:2px solid #ffaa33; }
+.pagination-info { background:#e8f0fa; padding:10px; border-radius:8px; margin-top:10px; font-size:0.9rem; }
 </style>
 </head>
 <body>
 <div class="scraper-card">
 <div class="header">
 <h1><i class="fas fa-spider"></i> OpenLibrary Trending Scraper</h1>
-<p>Ambil Work ID dari halaman trending sekarang → siap untuk PDF Generator</p>
+<p>Masukkan URL halaman trending → Dapatkan Work ID</p>
 </div>
 
 <div class="content">
-<!-- PROXY OPTION -->
-<div class="proxy-option">
-<label style="font-weight:bold; margin-right:10px;"><i class="fas fa-network-wired"></i> Pilih Metode:</label>
-<select id="proxySelect">
-<option value="corsproxy">CORS Proxy (corsproxy.io)</option>
-<option value="allorigins">AllOrigins (allorigins.win)</option>
-<option value="thingproxy">ThingProxy (thingproxy.freeboard.io)</option>
-</select>
-<p style="font-size:0.85rem; margin-top:8px; color:#666;">Beberapa proxy mungkin lambat, coba ganti jika error</p>
+<div class="two-column">
+<!-- KIRI: INPUT URL & PREVIEW -->
+<div class="panel">
+<h2><i class="fas fa-link"></i> Input URL Trending</h2>
+
+<div class="url-input-area">
+<label>🌐 Masukkan URL Halaman Trending:</label>
+<input type="url" id="trendingUrl" value="https://openlibrary.org/trending/now?page=1" placeholder="https://openlibrary.org/trending/now?page=1">
+<div style="display:flex; gap:10px; flex-wrap:wrap;">
+<button class="btn-primary" id="scrapeBtn">
+<i class="fas fa-search"></i> Scrape URL Ini
+</button>
+<button class="btn-secondary" id="addPageBtn">
+<i class="fas fa-plus"></i> Tambah Halaman Lain
+</button>
+</div>
+<div class="pagination-info" id="urlPreview">
+Menampilkan: <span id="currentUrl">https://openlibrary.org/trending/now?page=1</span>
+</div>
 </div>
 
-<div class="two-column">
-<!-- KIRI: TRENDING BOOKS -->
-<div class="panel">
-<h2><i class="fas fa-fire" style="color:#ffaa33;"></i> Trending Books Now</h2>
 <div id="trendingContainer">
 <div class="loading" id="loadingTrending">
 <i class="fas fa-spinner fa-pulse"></i>
-<p>Mengambil data trending...</p>
+<p>Masukkan URL dan klik Scrape</p>
 </div>
 </div>
-<button class="btn-primary" id="refreshTrending" style="margin-top:15px;">
-<i class="fas fa-sync-alt"></i> Refresh Trending
-</button>
-<button class="btn-secondary" id="copyAllIds">
-<i class="fas fa-copy"></i> Copy All Work IDs
-</button>
 </div>
 
 <!-- KANAN: HASIL WORK ID -->
 <div class="panel">
 <h2><i class="fas fa-barcode"></i> Work ID Results</h2>
 <div class="result-box">
-<textarea id="workIdOutput" placeholder="Work ID akan muncul di sini...&#10;OL554603W&#10;OL27448W&#10;OL66592W"></textarea>
+<textarea id="workIdOutput" placeholder="Work ID akan muncul di sini...&#10;Contoh:&#10;OL554603W&#10;OL27448W&#10;OL66592W"></textarea>
 </div>
 <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
 <button class="btn-primary" id="copyToClipboard">
-<i class="fas fa-copy"></i> Copy to Clipboard
+<i class="fas fa-copy"></i> Copy
 </button>
 <button class="btn-secondary" id="clearResults">
 <i class="fas fa-trash"></i> Clear
+</button>
+<button class="btn-secondary" id="appendResults">
+<i class="fas fa-plus-circle"></i> Append (tambah)
 </button>
 </div>
 <div id="countInfo" style="margin-top:10px; font-size:0.9rem; color:#666;"></div>
@@ -113,7 +117,7 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 </div>
 
 <div class="footer">
-<i class="fas fa-open-library"></i> Data real-time dari <a href="https://openlibrary.org/trending/now" target="_blank">OpenLibrary Trending</a> • Work ID siap pakai
+<i class="fas fa-open-library"></i> Scrape manual dari URL • Work ID siap pakai
 </div>
 </div>
 
@@ -122,47 +126,37 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 const trendingContainer = document.getElementById('trendingContainer');
 const workIdOutput = document.getElementById('workIdOutput');
 const countInfo = document.getElementById('countInfo');
-const refreshBtn = document.getElementById('refreshTrending');
-const copyAllBtn = document.getElementById('copyAllIds');
+const currentUrlSpan = document.getElementById('currentUrl');
+const trendingUrlInput = document.getElementById('trendingUrl');
+const scrapeBtn = document.getElementById('scrapeBtn');
+const addPageBtn = document.getElementById('addPageBtn');
 const copyToClipboardBtn = document.getElementById('copyToClipboard');
 const clearResultsBtn = document.getElementById('clearResults');
+const appendResultsBtn = document.getElementById('appendResults');
 const sendToGeneratorBtn = document.getElementById('sendToGenerator');
-const proxySelect = document.getElementById('proxySelect');
 
 // ===== VARIABEL GLOBAL =====
-let trendingBooks = [];
-let workIds = [];
+let currentBooks = [];
+let currentWorkIds = [];
 
-// ===== PROXY LIST =====
-function getProxyUrl(originalUrl) {
-const proxy = proxySelect.value;
-const proxies = {
-'corsproxy': `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`,
-'allorigins': `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`,
-'thingproxy': `https://thingproxy.freeboard.io/fetch/${originalUrl}`
-};
-return proxies[proxy] || proxies['corsproxy'];
-}
-
-// ===== FUNGSI FETCH TRENDING DENGAN PROXY =====
-async function fetchTrending() {
-trendingContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Mengambil data trending...</p></div>';
+// ===== FUNGSI SCRAPE DARI URL =====
+async function scrapeFromUrl(url, append = false) {
+trendingContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Mengambil data...</p></div>';
 
 try {
-const url = 'https://openlibrary.org/trending/now';
-const proxyUrl = getProxyUrl(url);
-console.log('Using proxy:', proxyUrl);
-
+// Gunakan proxy untuk hindari CORS
+const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
 const response = await fetch(proxyUrl);
-if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+if (!response.ok) throw new Error(`Gagal mengambil halaman (${response.status})`);
 
 const html = await response.text();
 
-// Parse Work ID dari HTML
+// Parse HTML
 const parser = new DOMParser();
 const doc = parser.parseFromString(html, 'text/html');
 
-// Cari semua link yang mengarah ke /works/OL...
+// Cari semua link ke /works/OL...
 const links = doc.querySelectorAll('a[href*="/works/OL"]');
 const bookItems = [];
 const seenIds = new Set();
@@ -175,10 +169,10 @@ const workId = match[1];
 if (seenIds.has(workId)) return;
 seenIds.add(workId);
 
-// Cari judul (dari link atau parent)
+// Judul
 let title = link.textContent.trim() || 'Unknown Title';
 
-// Cari author
+// Author
 let author = 'Unknown Author';
 const parent = link.closest('li') || link.closest('div') || link.parentElement;
 if (parent) {
@@ -188,7 +182,7 @@ author = authorEl.textContent.trim();
 }
 }
 
-// Cari gambar cover
+// Cover
 let coverUrl = 'https://covers.openlibrary.org/b/id/12389591-S.jpg';
 const img = parent?.querySelector('img');
 if (img && img.src) {
@@ -204,17 +198,15 @@ coverUrl
 }
 });
 
-trendingBooks = bookItems.slice(0, 30); // max 30 buku
-
 // Update tampilan
-if (trendingBooks.length > 0) {
+if (bookItems.length > 0) {
 let html = '<div class="book-list">';
-trendingBooks.slice(0, 20).forEach(book => {
+bookItems.slice(0, 25).forEach(book => {
 html += `
 <div class="book-item">
 <img src="${book.coverUrl}" onerror="this.src='https://covers.openlibrary.org/b/id/12389591-S.jpg'">
 <div class="book-info">
-<div class="book-title">${book.title.substring(0, 40)}${book.title.length > 40 ? '...' : ''}</div>
+<div class="book-title">${book.title.substring(0, 50)}${book.title.length > 50 ? '...' : ''}</div>
 <div class="book-author">${book.author}</div>
 <div class="book-id">${book.workId}</div>
 </div>
@@ -225,22 +217,32 @@ html += '</div>';
 trendingContainer.innerHTML = html;
 
 // Update work IDs
-workIds = trendingBooks.map(b => b.workId);
+const newWorkIds = bookItems.map(b => b.workId);
+
+if (append) {
+// Tambah ke yang sudah ada (hindari duplikat)
+const allIds = [...currentWorkIds, ...newWorkIds];
+currentWorkIds = [...new Set(allIds)];
+} else {
+currentWorkIds = newWorkIds;
+currentBooks = bookItems;
+}
+
 updateWorkIdOutput();
 } else {
-trendingContainer.innerHTML = '<div class="status">❌ Tidak ada Work ID ditemukan. Coba refresh atau ganti proxy.</div>';
+trendingContainer.innerHTML = '<div class="status">❌ Tidak ada Work ID ditemukan di halaman ini.</div>';
 }
 
 } catch (error) {
 console.error(error);
-trendingContainer.innerHTML = `<div class="status">❌ Error: ${error.message}. Coba ganti proxy atau refresh.</div>`;
+trendingContainer.innerHTML = `<div class="status">❌ Error: ${error.message}. Pastikan URL benar.</div>`;
 }
 }
 
 // ===== UPDATE TEXTAREA =====
 function updateWorkIdOutput() {
-workIdOutput.value = workIds.join('\n');
-countInfo.innerHTML = `📊 ${workIds.length} Work ID ditemukan`;
+workIdOutput.value = currentWorkIds.join('\n');
+countInfo.innerHTML = `📊 ${currentWorkIds.length} Work ID unik`;
 }
 
 // ===== COPY TO CLIPBOARD =====
@@ -253,13 +255,33 @@ alert('❌ Gagal copy, coba manual');
 }
 
 // ===== EVENT LISTENERS =====
-refreshBtn.addEventListener('click', fetchTrending);
-
-copyAllBtn.addEventListener('click', () => {
-if (workIds.length > 0) {
-copyToClipboard(workIds.join('\n'));
+scrapeBtn.addEventListener('click', () => {
+const url = trendingUrlInput.value.trim();
+if (url) {
+currentUrlSpan.textContent = url;
+scrapeFromUrl(url, false);
 } else {
-alert('Tidak ada Work ID untuk di-copy');
+alert('Masukkan URL terlebih dahulu');
+}
+});
+
+addPageBtn.addEventListener('click', () => {
+const url = trendingUrlInput.value.trim();
+if (url) {
+// Ubah page number
+let newUrl = url;
+if (url.includes('page=')) {
+// Increment page
+newUrl = url.replace(/page=(\d+)/, (match, p1) => `page=${parseInt(p1) + 1}`);
+} else {
+// Tambah page=2
+newUrl = url + (url.includes('?') ? '&page=2' : '?page=2');
+}
+trendingUrlInput.value = newUrl;
+currentUrlSpan.textContent = newUrl;
+scrapeFromUrl(newUrl, true); // append mode
+} else {
+alert('Masukkan URL terlebih dahulu');
 }
 });
 
@@ -273,30 +295,30 @@ alert('Tidak ada teks untuk di-copy');
 
 clearResultsBtn.addEventListener('click', () => {
 workIdOutput.value = '';
-workIds = [];
-trendingBooks = [];
+currentWorkIds = [];
+currentBooks = [];
 countInfo.innerHTML = '📊 0 Work ID';
 });
 
+appendResultsBtn.addEventListener('click', () => {
+alert('Gunakan tombol "Tambah Halaman Lain" untuk append dari halaman berikutnya');
+});
+
 sendToGeneratorBtn.addEventListener('click', () => {
-if (workIds.length > 0) {
-// Simpan ke localStorage untuk diakses PDF Generator
-localStorage.setItem('trendingWorkIds', JSON.stringify(workIds));
-alert(`✅ ${workIds.length} Work ID disimpan! Buka PDF Generator dan klik "Ambil dari Trending"`);
-// Buka PDF Generator di tab baru (ganti URL sesuai kebutuhan)
+if (currentWorkIds.length > 0) {
+localStorage.setItem('trendingWorkIds', JSON.stringify(currentWorkIds));
+alert(`✅ ${currentWorkIds.length} Work ID disimpan! Buka PDF Generator dan klik "Ambil dari Trending"`);
 window.open('generator.html', '_blank');
 } else {
 alert('Tidak ada Work ID untuk dikirim');
 }
 });
 
-// Ganti proxy dan refresh otomatis
-proxySelect.addEventListener('change', () => {
-fetchTrending();
-});
-
-// ===== INITIAL LOAD =====
-fetchTrending();
+// ===== INIT =====
+// Load contoh
+setTimeout(() => {
+currentUrlSpan.textContent = trendingUrlInput.value;
+}, 100);
 </script>
 </body>
 </html>
