@@ -24,59 +24,63 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 .btn-secondary:active { transform:translateY(3px); box-shadow:0 3px 0 #0b1f2c; }
 .result-box { background:white; border-radius:15px; padding:20px; margin-top:20px; border:2px dashed #ffaa33; }
 .result-box textarea { width:100%; height:250px; border:none; font-family:monospace; font-size:0.9rem; padding:10px; background:#f5f5f5; border-radius:10px; resize:vertical; }
-.book-list { max-height:400px; overflow-y:auto; margin-top:15px; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:10px; }
-.book-item { display:flex; align-items:center; gap:10px; padding:10px; background:white; border-radius:10px; border:1px solid #eee; cursor:pointer; }
+.book-list { max-height:500px; overflow-y:auto; margin-top:15px; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:10px; }
+.book-item { display:flex; align-items:center; gap:10px; padding:10px; background:white; border-radius:10px; border:1px solid #eee; cursor:pointer; transition:all 0.2s; }
 .book-item:hover { background:#fff0d4; border-color:#ffaa33; transform:translateY(-2px); box-shadow:0 5px 10px rgba(0,0,0,0.1); }
+.book-item.selected { background:#ffaa33; border-color:#b87d1f; }
 .book-item img { width:40px; height:60px; object-fit:cover; border-radius:5px; }
 .book-info { flex:1; }
 .book-title { font-weight:600; color:#0b1f2c; font-size:0.9rem; }
 .book-author { font-size:0.8rem; color:#666; }
-.book-id { font-size:0.75rem; color:#ffaa33; font-family:monospace; }
-.book-meta { font-size:0.7rem; color:#999; margin-top:3px; }
+.book-id { font-size:0.75rem; color:#ffaa33; font-family:monospace; font-weight:bold; }
+.book-meta { font-size:0.7rem; color:#999; margin-top:3px; display:flex; gap:10px; }
 .loading { text-align:center; padding:30px; }
 .loading i { font-size:2rem; color:#ffaa33; margin-bottom:10px; }
 .footer { background:#0b1f2c; padding:20px; color:#8ba0b0; text-align:center; border-top:2px solid #ffaa33; }
 .tab-bar { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
-.tab { padding:10px 20px; background:#f0f0f0; border-radius:40px; cursor:pointer; font-weight:600; transition:all 0.2s; }
+.tab { padding:10px 25px; background:#f0f0f0; border-radius:40px; cursor:pointer; font-weight:600; transition:all 0.2s; }
 .tab:hover { background:#ffaa33; color:#0b1f2c; }
 .tab.active { background:#ffaa33; color:#0b1f2c; box-shadow:0 4px 0 #b87d1f; }
-.filter-bar { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; align-items:center; background:#fff0d4; padding:15px; border-radius:15px; }
+.stats { display:flex; gap:15px; margin:15px 0; flex-wrap:wrap; }
+.stat-box { background:#f0f0f0; padding:10px 15px; border-radius:10px; flex:1; text-align:center; }
+.stat-number { font-size:1.5rem; font-weight:bold; color:#ffaa33; }
+.stat-label { font-size:0.8rem; color:#666; }
 </style>
 </head>
 <body>
 <div class="scraper-card">
 <div class="header">
 <h1><i class="fas fa-fire"></i> OpenLibrary REAL Trending</h1>
-<p>Berdasarkan aktivitas reading, wanting, dan reading now</p>
+<p>Berdasarkan aktivitas pengguna (want, read, currently reading)</p>
 </div>
 
 <div class="content">
 <!-- TAB TRENDING -->
 <div class="tab-bar">
 <div class="tab active" data-type="want_to_read">📚 Most Wanted</div>
-<div class="tab" data-type="already_read">✅ Most Read</div>
+<div class="tab" data-type="already_read">✅ Already Read</div>
 <div class="tab" data-type="currently_reading">📖 Currently Reading</div>
 </div>
 
-<div class="filter-bar">
+<div style="display:flex; gap:15px; margin-bottom:20px; align-items:center; flex-wrap:wrap;">
 <div style="flex:1;">
-<label style="font-weight:bold; margin-right:10px;">Time Range:</label>
-<select id="timeRange">
-<option value="now">🔥 Now</option>
-<option value="day">Today</option>
-<option value="week">This Week</option>
-<option value="month">This Month</option>
-<option value="year">This Year</option>
-</select>
-</div>
-<div>
-<label style="font-weight:bold; margin-right:10px;">Limit:</label>
-<input type="number" id="limit" value="50" min="10" max="100" step="10" style="width:80px; padding:8px;">
+<label style="font-weight:bold;">Limit:</label>
+<input type="number" id="limit" value="50" min="10" max="100" step="10" style="padding:8px; width:100px; margin-left:10px; border:2px solid #ccddee; border-radius:8px;">
 </div>
 <div>
 <button class="btn-primary" id="fetchBtn">
-<i class="fas fa-sync-alt"></i> Get Trending
+<i class="fas fa-sync-alt"></i> Get Trending Books
 </button>
+</div>
+<div class="stats" style="flex:2;">
+<div class="stat-box">
+<div class="stat-number" id="totalBooks">0</div>
+<div class="stat-label">Books</div>
+</div>
+<div class="stat-box">
+<div class="stat-number" id="selectedCount">0</div>
+<div class="stat-label">Selected</div>
+</div>
 </div>
 </div>
 
@@ -88,7 +92,7 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 </div>
 
 <div class="panel" style="margin-top:20px;">
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
 <h2 style="border-left:8px solid #ffaa33; padding-left:15px; margin:0;"><i class="fas fa-barcode"></i> Work ID Collection</h2>
 <div>
 <button class="btn-secondary" id="copyBtn">
@@ -97,13 +101,21 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 <button class="btn-secondary" id="clearBtn">
 <i class="fas fa-trash"></i> Clear
 </button>
+<button class="btn-secondary" id="selectAllBtn">
+<i class="fas fa-check-double"></i> Select All
+</button>
 </div>
 </div>
 
 <div class="result-box">
 <textarea id="workIdOutput" placeholder="Work IDs will appear here..."></textarea>
 </div>
-<div id="countInfo" style="margin-top:10px; font-size:0.9rem; color:#666; text-align:right;"></div>
+<div style="display:flex; justify-content:space-between; margin-top:10px;">
+<span id="countInfo" style="color:#666;">📊 Total: 0 Work IDs</span>
+<button class="btn-primary" id="removeDuplicatesBtn" style="padding:5px 15px; font-size:0.9rem;">
+<i class="fas fa-filter"></i> Remove Duplicates
+</button>
+</div>
 </div>
 
 <!-- Send to PDF Generator -->
@@ -116,7 +128,7 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 </div>
 
 <div class="footer">
-<i class="fas fa-open-library"></i> Data from OpenLibrary • Real user activity • Work IDs ready
+<i class="fas fa-open-library"></i> Data from OpenLibrary • Click books to add Work ID
 </div>
 </div>
 
@@ -125,41 +137,29 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 const resultContainer = document.getElementById('resultContainer');
 const workIdOutput = document.getElementById('workIdOutput');
 const countInfo = document.getElementById('countInfo');
+const totalBooks = document.getElementById('totalBooks');
+const selectedCount = document.getElementById('selectedCount');
 const fetchBtn = document.getElementById('fetchBtn');
 const copyBtn = document.getElementById('copyBtn');
 const clearBtn = document.getElementById('clearBtn');
+const selectAllBtn = document.getElementById('selectAllBtn');
+const removeDuplicatesBtn = document.getElementById('removeDuplicatesBtn');
 const sendBtn = document.getElementById('sendBtn');
-const timeRange = document.getElementById('timeRange');
 const limitInput = document.getElementById('limit');
 const tabs = document.querySelectorAll('.tab');
 
 // ===== VARIABEL =====
 let allWorkIds = [];
 let currentType = 'want_to_read';
-let currentData = [];
+let currentBooks = [];
 
 // ===== FUNCTION FETCH TRENDING =====
 async function fetchTrending() {
 resultContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Loading trending books...</p></div>';
 
 try {
-// Mapping parameter
-const typeMapping = {
-'want_to_read': 'want_to_read',
-'already_read': 'already_read',
-'currently_reading': 'currently_reading'
-};
-
-const timeMapping = {
-'now': 'now',
-'day': 'day',
-'week': 'week',
-'month': 'month',
-'year': 'year'
-};
-
-// URL API OpenLibrary untuk trending
-const url = `https://openlibrary.org/trending/${typeMapping[currentType]}.json?time_range=${timeMapping[timeRange.value]}&limit=${limitInput.value}`;
+// URL API yang benar untuk trending
+const url = `https://openlibrary.org/trending/${currentType}.json?limit=${limitInput.value}`;
 
 const response = await fetch(url);
 if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -173,31 +173,38 @@ title: work.title || 'Unknown Title',
 author: work.author_name ? work.author_name[0] : 'Unknown Author',
 coverId: work.cover_id,
 rating: work.ratings_average,
-ratingsCount: work.ratings_count,
-wantToRead: work.want_to_read_count,
-alreadyRead: work.already_read_count,
-currentlyReading: work.currently_reading_count
+ratingsCount: work.ratings_count || 0,
+wantCount: work.want_to_read_count || 0,
+readCount: work.already_read_count || 0,
+readingCount: work.currently_reading_count || 0
 }));
+
+currentBooks = books;
+totalBooks.innerHTML = books.length;
 
 // Tampilkan buku
 let html = '<div class="book-list">';
-books.slice(0, 20).forEach(book => {
+books.forEach(book => {
 const coverUrl = book.coverId ? `https://covers.openlibrary.org/b/id/${book.coverId}-S.jpg` : 'https://covers.openlibrary.org/b/id/12389591-S.jpg';
+const isSelected = allWorkIds.includes(book.workId) ? 'selected' : '';
 
-// Hitung aktivitas tertinggi
-let activity = '';
-if (currentType === 'want_to_read') activity = `📚 ${book.wantToRead || 0} want`;
-else if (currentType === 'already_read') activity = `✅ ${book.alreadyRead || 0} read`;
-else activity = `📖 ${book.currentlyReading || 0} reading`;
+// Tampilkan count sesuai tipe
+let count = '';
+if (currentType === 'want_to_read') count = `📚 ${book.wantCount}`;
+else if (currentType === 'already_read') count = `✅ ${book.readCount}`;
+else count = `📖 ${book.readingCount}`;
 
 html += `
-<div class="book-item" onclick="addWorkId('${book.workId}')">
+<div class="book-item ${isSelected}" onclick="toggleWorkId('${book.workId}')">
 <img src="${coverUrl}" onerror="this.src='https://covers.openlibrary.org/b/id/12389591-S.jpg'">
 <div class="book-info">
 <div class="book-title">${book.title.substring(0, 60)}${book.title.length > 60 ? '...' : ''}</div>
 <div class="book-author">${book.author}</div>
 <div class="book-id">${book.workId}</div>
-<div class="book-meta">⭐ ${book.rating ? book.rating.toFixed(1) : 'N/A'} • ${activity}</div>
+<div class="book-meta">
+<span>⭐ ${book.rating ? book.rating.toFixed(1) : 'N/A'}</span>
+<span>${count}</span>
+</div>
 </div>
 </div>
 `;
@@ -205,14 +212,8 @@ html += `
 html += '</div>';
 resultContainer.innerHTML = html;
 
-// Auto add to collection
-const newWorkIds = books.map(b => b.workId);
-allWorkIds = [...new Set([...allWorkIds, ...newWorkIds])];
-updateOutput();
-currentData = books;
-
 } else {
-resultContainer.innerHTML = '<div class="status">❌ No data found</div>';
+resultContainer.innerHTML = '<div class="status">❌ No books found</div>';
 }
 
 } catch (error) {
@@ -221,18 +222,38 @@ resultContainer.innerHTML = `<div class="status">❌ Error: ${error.message}</di
 }
 }
 
-// ===== TAMBAH WORK ID (klik buku) =====
-window.addWorkId = function(workId) {
-if (!allWorkIds.includes(workId)) {
+// ===== TOGGLE WORK ID =====
+window.toggleWorkId = function(workId) {
+const index = allWorkIds.indexOf(workId);
+if (index === -1) {
 allWorkIds.push(workId);
-updateOutput();
+} else {
+allWorkIds.splice(index, 1);
 }
+updateOutput();
+highlightSelected();
 };
+
+// ===== HIGHLIGHT BUKU YANG DIPILIH =====
+function highlightSelected() {
+document.querySelectorAll('.book-item').forEach(item => {
+const idElem = item.querySelector('.book-id');
+if (idElem) {
+const workId = idElem.textContent.trim();
+if (allWorkIds.includes(workId)) {
+item.classList.add('selected');
+} else {
+item.classList.remove('selected');
+}
+}
+});
+}
 
 // ===== UPDATE OUTPUT =====
 function updateOutput() {
 workIdOutput.value = allWorkIds.join('\n');
-countInfo.innerHTML = `📊 Total: ${allWorkIds.length} unique Work IDs`;
+countInfo.innerHTML = `📊 Total: ${allWorkIds.length} Work IDs`;
+selectedCount.innerHTML = allWorkIds.length;
 }
 
 // ===== COPY =====
@@ -246,6 +267,22 @@ alert('No Work IDs to copy');
 }
 }
 
+// ===== REMOVE DUPLICATES =====
+function removeDuplicates() {
+allWorkIds = [...new Set(allWorkIds)];
+updateOutput();
+highlightSelected();
+alert('✅ Duplicates removed!');
+}
+
+// ===== SELECT ALL =====
+function selectAll() {
+const currentWorkIds = currentBooks.map(b => b.workId);
+allWorkIds = [...new Set([...allWorkIds, ...currentWorkIds])];
+updateOutput();
+highlightSelected();
+}
+
 // ===== EVENT =====
 tabs.forEach(tab => {
 tab.addEventListener('click', () => {
@@ -257,14 +294,14 @@ fetchTrending();
 });
 
 fetchBtn.addEventListener('click', fetchTrending);
-
 copyBtn.addEventListener('click', copyToClipboard);
-
 clearBtn.addEventListener('click', () => {
-workIdOutput.value = '';
 allWorkIds = [];
-countInfo.innerHTML = '📊 Total: 0 Work IDs';
+updateOutput();
+highlightSelected();
 });
+selectAllBtn.addEventListener('click', selectAll);
+removeDuplicatesBtn.addEventListener('click', removeDuplicates);
 
 sendBtn.addEventListener('click', () => {
 if (allWorkIds.length > 0) {
