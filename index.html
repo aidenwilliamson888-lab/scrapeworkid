@@ -41,6 +41,8 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 .footer a { color:#ffaa33; text-decoration:none; }
 .copy-btn { background:#f0f0f0; border:none; border-radius:5px; padding:5px 10px; cursor:pointer; margin-left:10px; }
 .copy-btn:hover { background:#ffaa33; color:white; }
+.proxy-option { background:#fff0d4; padding:15px; border-radius:10px; margin-bottom:20px; }
+.proxy-option select { padding:8px; border-radius:5px; border:2px solid #ffaa33; }
 </style>
 </head>
 <body>
@@ -51,6 +53,17 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 </div>
 
 <div class="content">
+<!-- PROXY OPTION -->
+<div class="proxy-option">
+<label style="font-weight:bold; margin-right:10px;"><i class="fas fa-network-wired"></i> Pilih Metode:</label>
+<select id="proxySelect">
+<option value="corsproxy">CORS Proxy (corsproxy.io)</option>
+<option value="allorigins">AllOrigins (allorigins.win)</option>
+<option value="thingproxy">ThingProxy (thingproxy.freeboard.io)</option>
+</select>
+<p style="font-size:0.85rem; margin-top:8px; color:#666;">Beberapa proxy mungkin lambat, coba ganti jika error</p>
+</div>
+
 <div class="two-column">
 <!-- KIRI: TRENDING BOOKS -->
 <div class="panel">
@@ -114,18 +127,35 @@ const copyAllBtn = document.getElementById('copyAllIds');
 const copyToClipboardBtn = document.getElementById('copyToClipboard');
 const clearResultsBtn = document.getElementById('clearResults');
 const sendToGeneratorBtn = document.getElementById('sendToGenerator');
+const proxySelect = document.getElementById('proxySelect');
 
 // ===== VARIABEL GLOBAL =====
 let trendingBooks = [];
 let workIds = [];
 
-// ===== FUNGSI FETCH TRENDING =====
+// ===== PROXY LIST =====
+function getProxyUrl(originalUrl) {
+const proxy = proxySelect.value;
+const proxies = {
+'corsproxy': `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`,
+'allorigins': `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`,
+'thingproxy': `https://thingproxy.freeboard.io/fetch/${originalUrl}`
+};
+return proxies[proxy] || proxies['corsproxy'];
+}
+
+// ===== FUNGSI FETCH TRENDING DENGAN PROXY =====
 async function fetchTrending() {
 trendingContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Mengambil data trending...</p></div>';
 
 try {
-// Fetch halaman trending
-const response = await fetch('https://openlibrary.org/trending/now');
+const url = 'https://openlibrary.org/trending/now';
+const proxyUrl = getProxyUrl(url);
+console.log('Using proxy:', proxyUrl);
+
+const response = await fetch(proxyUrl);
+if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
 const html = await response.text();
 
 // Parse Work ID dari HTML
@@ -135,17 +165,22 @@ const doc = parser.parseFromString(html, 'text/html');
 // Cari semua link yang mengarah ke /works/OL...
 const links = doc.querySelectorAll('a[href*="/works/OL"]');
 const bookItems = [];
+const seenIds = new Set();
 
 links.forEach(link => {
 const href = link.getAttribute('href');
 const match = href.match(/\/works\/(OL\d+[A-Z]?)/);
 if (match && match[1]) {
 const workId = match[1];
-const title = link.textContent.trim() || 'Unknown Title';
+if (seenIds.has(workId)) return;
+seenIds.add(workId);
 
-// Cari author (biasanya di parent)
+// Cari judul (dari link atau parent)
+let title = link.textContent.trim() || 'Unknown Title';
+
+// Cari author
 let author = 'Unknown Author';
-const parent = link.closest('li') || link.closest('div');
+const parent = link.closest('li') || link.closest('div') || link.parentElement;
 if (parent) {
 const authorEl = parent.querySelector('a[href*="/authors/"]');
 if (authorEl) {
@@ -160,8 +195,6 @@ if (img && img.src) {
 coverUrl = img.src;
 }
 
-// Cek duplikat
-if (!bookItems.some(b => b.workId === workId)) {
 bookItems.push({
 workId,
 title,
@@ -169,10 +202,9 @@ author,
 coverUrl
 });
 }
-}
 });
 
-trendingBooks = bookItems;
+trendingBooks = bookItems.slice(0, 30); // max 30 buku
 
 // Update tampilan
 if (trendingBooks.length > 0) {
@@ -182,7 +214,7 @@ html += `
 <div class="book-item">
 <img src="${book.coverUrl}" onerror="this.src='https://covers.openlibrary.org/b/id/12389591-S.jpg'">
 <div class="book-info">
-<div class="book-title">${book.title}</div>
+<div class="book-title">${book.title.substring(0, 40)}${book.title.length > 40 ? '...' : ''}</div>
 <div class="book-author">${book.author}</div>
 <div class="book-id">${book.workId}</div>
 </div>
@@ -196,12 +228,12 @@ trendingContainer.innerHTML = html;
 workIds = trendingBooks.map(b => b.workId);
 updateWorkIdOutput();
 } else {
-trendingContainer.innerHTML = '<div class="status">❌ Tidak ada Work ID ditemukan. Coba refresh.</div>';
+trendingContainer.innerHTML = '<div class="status">❌ Tidak ada Work ID ditemukan. Coba refresh atau ganti proxy.</div>';
 }
 
 } catch (error) {
 console.error(error);
-trendingContainer.innerHTML = `<div class="status">❌ Error: ${error.message}</div>`;
+trendingContainer.innerHTML = `<div class="status">❌ Error: ${error.message}. Coba ganti proxy atau refresh.</div>`;
 }
 }
 
@@ -256,6 +288,11 @@ window.open('generator.html', '_blank');
 } else {
 alert('Tidak ada Work ID untuk dikirim');
 }
+});
+
+// Ganti proxy dan refresh otomatis
+proxySelect.addEventListener('change', () => {
+fetchTrending();
 });
 
 // ===== INITIAL LOAD =====
