@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-<title>📊 OpenLibrary Trending via API</title>
+<title>📊 OpenLibrary Trending Work IDs</title>
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
@@ -35,64 +35,54 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 .loading { text-align:center; padding:30px; }
 .loading i { font-size:2rem; color:#ffaa33; margin-bottom:10px; }
 .footer { background:#0b1f2c; padding:20px; color:#8ba0b0; text-align:center; border-top:2px solid #ffaa33; }
-.filter-bar { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
-.filter-bar select, .filter-bar input { padding:10px; border:2px solid #ccddee; border-radius:8px; font-size:0.9rem; }
-.filter-bar select:focus, .filter-bar input:focus { outline:none; border-color:#ffaa33; }
+.tab-bar { display:flex; gap:10px; margin-bottom:20px; border-bottom:2px solid #e0e8f0; padding-bottom:10px; }
+.tab { padding:8px 20px; cursor:pointer; border-radius:20px; font-weight:600; }
+.tab.active { background:#ffaa33; color:#0b1f2c; }
 </style>
 </head>
 <body>
 <div class="scraper-card">
 <div class="header">
-<h1><i class="fas fa-chart-line"></i> OpenLibrary Trending via API</h1>
-<p>Mengambil data real-time dari Search API OpenLibrary</p>
+<h1><i class="fas fa-chart-line"></i> OpenLibrary Trending Work IDs</h1>
+<p>Ambil Work ID dari berbagai kategori trending</p>
 </div>
 
 <div class="content">
+<!-- TAB PILIHAN -->
+<div class="tab-bar">
+<div class="tab active" data-tab="recent">📚 Recent</div>
+<div class="tab" data-tab="popular">🔥 Popular</div>
+<div class="tab" data-tab="wanted">⭐ Most Wanted</div>
+<div class="tab" data-tab="read">✅ Most Read</div>
+</div>
+
 <div class="panel">
-<h2><i class="fas fa-sliders-h"></i> Filter Trending</h2>
-
-<div class="filter-bar">
-<select id="sortBy">
-<option value="want_to_read">📚 Paling Banyak Diinginkan</option>
-<option value="already_read">✅ Paling Banyak Dibaca</option>
-<option value="currently_reading">📖 Sedang Dibaca</option>
-<option value="new">🆕 Terbaru</option>
-</select>
-
-<select id="timeRange">
-<option value="now">🔥 Trending Now</option>
-<option value="day">Hari Ini</option>
-<option value="week">Minggu Ini</option>
-<option value="month">Bulan Ini</option>
-</select>
-
-<input type="number" id="limit" value="50" min="10" max="100" step="10" style="width:80px;">
-
-<button class="btn-primary" id="fetchTrendingBtn">
-<i class="fas fa-sync-alt"></i> Ambil Trending
+<div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+<input type="number" id="limit" value="50" min="10" max="100" step="10" style="padding:10px; border:2px solid #ccddee; border-radius:8px; width:100px;">
+<button class="btn-primary" id="fetchBtn">
+<i class="fas fa-sync-alt"></i> Ambil Work ID
 </button>
-
-<button class="btn-secondary" id="nextPageBtn" disabled>
+<button class="btn-secondary" id="nextBtn" disabled>
 <i class="fas fa-arrow-right"></i> Halaman Selanjutnya
 </button>
 </div>
 
-<div id="trendingContainer">
-<div class="loading" id="loadingTrending">
+<div id="resultContainer">
+<div class="loading" id="loading">
 <i class="fas fa-spinner fa-pulse"></i>
-<p>Klik "Ambil Trending" untuk memulai</p>
+<p>Klik "Ambil Work ID" untuk memulai</p>
 </div>
 </div>
 </div>
 
 <div class="panel">
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-<h2 style="border-left:8px solid #ffaa33; padding-left:15px; margin:0;"><i class="fas fa-barcode"></i> Work ID Results</h2>
+<h2 style="border-left:8px solid #ffaa33; padding-left:15px; margin:0;"><i class="fas fa-barcode"></i> Work ID List</h2>
 <div>
-<button class="btn-secondary" id="copyToClipboard">
+<button class="btn-secondary" id="copyBtn">
 <i class="fas fa-copy"></i> Copy
 </button>
-<button class="btn-secondary" id="clearResults">
+<button class="btn-secondary" id="clearBtn">
 <i class="fas fa-trash"></i> Clear
 </button>
 </div>
@@ -107,61 +97,61 @@ body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:
 <!-- Kirim ke PDF Generator -->
 <div style="background:#fff0d4; padding:20px; border-radius:20px; margin-top:20px;">
 <h3 style="color:#0b1f2c; margin-bottom:15px;"><i class="fas fa-file-pdf"></i> Kirim ke PDF Generator</h3>
-<button class="btn-primary" id="sendToGenerator">
+<button class="btn-primary" id="sendBtn">
 <i class="fas fa-arrow-right"></i> Gunakan Work ID untuk Generate PDF
 </button>
 </div>
 </div>
 
 <div class="footer">
-<i class="fas fa-open-library"></i> Data dari OpenLibrary Search API • Work ID siap pakai
+<i class="fas fa-open-library"></i> Data dari OpenLibrary • Work ID siap pakai
 </div>
 </div>
 
 <script>
 // ===== ELEMENTS =====
-const trendingContainer = document.getElementById('trendingContainer');
+const resultContainer = document.getElementById('resultContainer');
 const workIdOutput = document.getElementById('workIdOutput');
 const countInfo = document.getElementById('countInfo');
-const fetchBtn = document.getElementById('fetchTrendingBtn');
-const nextPageBtn = document.getElementById('nextPageBtn');
-const copyBtn = document.getElementById('copyToClipboard');
-const clearBtn = document.getElementById('clearResults');
-const sendBtn = document.getElementById('sendToGenerator');
-const sortBy = document.getElementById('sortBy');
-const timeRange = document.getElementById('timeRange');
-const limit = document.getElementById('limit');
+const fetchBtn = document.getElementById('fetchBtn');
+const nextBtn = document.getElementById('nextBtn');
+const copyBtn = document.getElementById('copyBtn');
+const clearBtn = document.getElementById('clearBtn');
+const sendBtn = document.getElementById('sendBtn');
+const limitInput = document.getElementById('limit');
+const tabs = document.querySelectorAll('.tab');
 
-// ===== VARIABEL GLOBAL =====
+// ===== VARIABEL =====
 let currentPage = 1;
-let totalResults = 0;
 let allWorkIds = [];
+let currentTab = 'recent';
+let currentData = [];
 
-// ===== FUNGSI FETCH DARI OPENLIBRARY API =====
-async function fetchTrending(page = 1, append = false) {
-trendingContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Mengambil data trending...</p></div>';
+// ===== FUNCTION FETCH =====
+async function fetchWorkIds(page = 1, append = false) {
+resultContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Mengambil data...</p></div>';
 
 try {
-// Mapping sort ke parameter OpenLibrary
-const sortMapping = {
-'want_to_read': 'want_to_read',
-'already_read': 'already_read',
-'currently_reading': 'currently_reading',
-'new': 'new'
-};
+// Mapping kategori ke query
+let query = '';
+switch(currentTab) {
+case 'recent':
+query = '&sort=new&limit=' + limitInput.value;
+break;
+case 'popular':
+query = '&sort=rating&limit=' + limitInput.value;
+break;
+case 'wanted':
+query = '&sort=want_to_read&limit=' + limitInput.value;
+break;
+case 'read':
+query = '&sort=already_read&limit=' + limitInput.value;
+break;
+}
 
-// Mapping time range
-const timeMapping = {
-'now': 'now',
-'day': 'day',
-'week': 'week',
-'month': 'month'
-};
+const url = `https://openlibrary.org/search.json?q=*&fields=key,title,author_name,first_publish_year,cover_i${query}&page=${page}`;
 
-// URL API OpenLibrary
-const apiUrl = `https://openlibrary.org/search.json?sort=${sortMapping[sortBy.value]}&time_range=${timeMapping[timeRange.value]}&limit=${limit.value}&page=${page}`;
-
-const response = await fetch(apiUrl);
+const response = await fetch(url);
 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
 const data = await response.json();
@@ -177,7 +167,7 @@ year: doc.first_publish_year || 'Unknown'
 
 // Tampilkan buku
 let html = '<div class="book-list">';
-books.slice(0, 20).forEach(book => {
+books.forEach(book => {
 const coverUrl = book.coverId ? `https://covers.openlibrary.org/b/id/${book.coverId}-S.jpg` : 'https://covers.openlibrary.org/b/id/12389591-S.jpg';
 html += `
 <div class="book-item">
@@ -191,7 +181,7 @@ html += `
 `;
 });
 html += '</div>';
-trendingContainer.innerHTML = html;
+resultContainer.innerHTML = html;
 
 // Update Work IDs
 const newWorkIds = books.map(b => b.workId);
@@ -202,50 +192,48 @@ allWorkIds = [...new Set([...allWorkIds, ...newWorkIds])];
 allWorkIds = newWorkIds;
 }
 
-updateWorkIdOutput();
+updateOutput();
 
-// Update pagination
+// Pagination
 currentPage = page;
-totalResults = data.numFound || 0;
-nextPageBtn.disabled = books.length < limit.value;
+nextBtn.disabled = books.length < limitInput.value;
+currentData = books;
 
 } else {
-trendingContainer.innerHTML = '<div class="status">❌ Tidak ada data ditemukan</div>';
+resultContainer.innerHTML = '<div class="status">❌ Tidak ada data</div>';
 }
 
 } catch (error) {
 console.error(error);
-trendingContainer.innerHTML = `<div class="status">❌ Error: ${error.message}</div>`;
+resultContainer.innerHTML = `<div class="status">❌ Error: ${error.message}</div>`;
 }
 }
 
-// ===== UPDATE TEXTAREA =====
-function updateWorkIdOutput() {
+// ===== UPDATE OUTPUT =====
+function updateOutput() {
 workIdOutput.value = allWorkIds.join('\n');
-countInfo.innerHTML = `📊 Total: ${allWorkIds.length} Work ID unik (dari ${totalResults} hasil)`;
+countInfo.innerHTML = `📊 Total: ${allWorkIds.length} Work ID`;
 }
 
-// ===== COPY TO CLIPBOARD =====
+// ===== COPY =====
 function copyToClipboard() {
 if (allWorkIds.length > 0) {
 navigator.clipboard.writeText(allWorkIds.join('\n')).then(() => {
-alert(`✅ ${allWorkIds.length} Work ID berhasil di-copy!`);
-}).catch(() => {
-alert('❌ Gagal copy, coba manual');
+alert(`✅ ${allWorkIds.length} Work ID di-copy!`);
 });
 } else {
-alert('Tidak ada Work ID untuk di-copy');
+alert('Tidak ada Work ID');
 }
 }
 
-// ===== EVENT LISTENERS =====
+// ===== EVENT =====
 fetchBtn.addEventListener('click', () => {
 currentPage = 1;
-fetchTrending(1, false);
+fetchWorkIds(1, false);
 });
 
-nextPageBtn.addEventListener('click', () => {
-fetchTrending(currentPage + 1, true);
+nextBtn.addEventListener('click', () => {
+fetchWorkIds(currentPage + 1, true);
 });
 
 copyBtn.addEventListener('click', copyToClipboard);
@@ -259,15 +247,25 @@ countInfo.innerHTML = '📊 Total: 0 Work ID';
 sendBtn.addEventListener('click', () => {
 if (allWorkIds.length > 0) {
 localStorage.setItem('trendingWorkIds', JSON.stringify(allWorkIds));
-alert(`✅ ${allWorkIds.length} Work ID disimpan! Buka PDF Generator dan gunakan.`);
+alert(`✅ ${allWorkIds.length} Work ID disimpan!`);
 window.open('generator.html', '_blank');
 } else {
-alert('Tidak ada Work ID untuk dikirim');
+alert('Tidak ada Work ID');
 }
 });
 
+tabs.forEach(tab => {
+tab.addEventListener('click', () => {
+tabs.forEach(t => t.classList.remove('active'));
+tab.classList.add('active');
+currentTab = tab.dataset.tab;
+currentPage = 1;
+fetchWorkIds(1, false);
+});
+});
+
 // ===== LOAD PERTAMA =====
-fetchTrending(1, false);
+fetchWorkIds(1, false);
 </script>
 </body>
 </html>
