@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<title>📊 OpenLibrary REAL Trending</title>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+body { background:linear-gradient(145deg, #0b1f2c 0%, #1a3440 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.scraper-card { max-width:1200px; width:100%; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); border-radius:40px; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,0.4); border:2px solid rgba(255,170,51,0.5); }
+.header { background:linear-gradient(135deg, #102a36 0%, #1d3e4f 100%); padding:30px; text-align:center; border-bottom:5px solid #ffaa33; }
+.header h1 { color:white; font-size:2.5rem; font-weight:800; margin-bottom:10px; }
+.header p { color:#ffaa33; font-size:1.2rem; }
+.content { padding:30px; }
+.panel { background:#f8faff; padding:25px; border-radius:25px; border:2px solid #e0e8f0; margin-bottom:20px; }
+.panel h2 { color:#0b1f2c; margin-bottom:20px; font-size:1.5rem; border-left:8px solid #ffaa33; padding-left:15px; }
+.btn-primary { background:#ffaa33; border:none; border-radius:60px; padding:12px 25px; font-size:1.1rem; font-weight:800; color:#0b1f2c; cursor:pointer; box-shadow:0 6px 0 #b87d1f; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; margin-right:10px; }
+.btn-primary:hover { transform:translateY(-3px); box-shadow:0 9px 0 #b87d1f; background:#ffb852; }
+.btn-primary:active { transform:translateY(3px); box-shadow:0 3px 0 #b87d1f; }
+.btn-secondary { background:#1d3e4f; border:none; border-radius:60px; padding:12px 25px; font-size:1.1rem; font-weight:800; color:white; cursor:pointer; box-shadow:0 6px 0 #0b1f2c; transition:all 0.2s; display:inline-flex; align-items:center; gap:10px; }
+.btn-secondary:hover { transform:translateY(-3px); box-shadow:0 9px 0 #0b1f2c; background:#2a5066; }
+.btn-secondary:active { transform:translateY(3px); box-shadow:0 3px 0 #0b1f2c; }
+.result-box { background:white; border-radius:15px; padding:20px; margin-top:20px; border:2px dashed #ffaa33; }
+.result-box textarea { width:100%; height:250px; border:none; font-family:monospace; font-size:0.9rem; padding:10px; background:#f5f5f5; border-radius:10px; resize:vertical; }
+.book-list { max-height:400px; overflow-y:auto; margin-top:15px; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:10px; }
+.book-item { display:flex; align-items:center; gap:10px; padding:10px; background:white; border-radius:10px; border:1px solid #eee; cursor:pointer; }
+.book-item:hover { background:#fff0d4; border-color:#ffaa33; transform:translateY(-2px); box-shadow:0 5px 10px rgba(0,0,0,0.1); }
+.book-item img { width:40px; height:60px; object-fit:cover; border-radius:5px; }
+.book-info { flex:1; }
+.book-title { font-weight:600; color:#0b1f2c; font-size:0.9rem; }
+.book-author { font-size:0.8rem; color:#666; }
+.book-id { font-size:0.75rem; color:#ffaa33; font-family:monospace; }
+.book-meta { font-size:0.7rem; color:#999; margin-top:3px; }
+.loading { text-align:center; padding:30px; }
+.loading i { font-size:2rem; color:#ffaa33; margin-bottom:10px; }
+.footer { background:#0b1f2c; padding:20px; color:#8ba0b0; text-align:center; border-top:2px solid #ffaa33; }
+.tab-bar { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+.tab { padding:10px 20px; background:#f0f0f0; border-radius:40px; cursor:pointer; font-weight:600; transition:all 0.2s; }
+.tab:hover { background:#ffaa33; color:#0b1f2c; }
+.tab.active { background:#ffaa33; color:#0b1f2c; box-shadow:0 4px 0 #b87d1f; }
+.filter-bar { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; align-items:center; background:#fff0d4; padding:15px; border-radius:15px; }
+</style>
+</head>
+<body>
+<div class="scraper-card">
+<div class="header">
+<h1><i class="fas fa-fire"></i> OpenLibrary REAL Trending</h1>
+<p>Berdasarkan aktivitas reading, wanting, dan reading now</p>
+</div>
+
+<div class="content">
+<!-- TAB TRENDING -->
+<div class="tab-bar">
+<div class="tab active" data-type="want_to_read">📚 Most Wanted</div>
+<div class="tab" data-type="already_read">✅ Most Read</div>
+<div class="tab" data-type="currently_reading">📖 Currently Reading</div>
+</div>
+
+<div class="filter-bar">
+<div style="flex:1;">
+<label style="font-weight:bold; margin-right:10px;">Time Range:</label>
+<select id="timeRange">
+<option value="now">🔥 Now</option>
+<option value="day">Today</option>
+<option value="week">This Week</option>
+<option value="month">This Month</option>
+<option value="year">This Year</option>
+</select>
+</div>
+<div>
+<label style="font-weight:bold; margin-right:10px;">Limit:</label>
+<input type="number" id="limit" value="50" min="10" max="100" step="10" style="width:80px; padding:8px;">
+</div>
+<div>
+<button class="btn-primary" id="fetchBtn">
+<i class="fas fa-sync-alt"></i> Get Trending
+</button>
+</div>
+</div>
+
+<div id="resultContainer">
+<div class="loading" id="loading">
+<i class="fas fa-spinner fa-pulse"></i>
+<p>Loading trending books...</p>
+</div>
+</div>
+
+<div class="panel" style="margin-top:20px;">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+<h2 style="border-left:8px solid #ffaa33; padding-left:15px; margin:0;"><i class="fas fa-barcode"></i> Work ID Collection</h2>
+<div>
+<button class="btn-secondary" id="copyBtn">
+<i class="fas fa-copy"></i> Copy All
+</button>
+<button class="btn-secondary" id="clearBtn">
+<i class="fas fa-trash"></i> Clear
+</button>
+</div>
+</div>
+
+<div class="result-box">
+<textarea id="workIdOutput" placeholder="Work IDs will appear here..."></textarea>
+</div>
+<div id="countInfo" style="margin-top:10px; font-size:0.9rem; color:#666; text-align:right;"></div>
+</div>
+
+<!-- Send to PDF Generator -->
+<div style="background:#fff0d4; padding:20px; border-radius:20px; margin-top:20px;">
+<h3 style="color:#0b1f2c; margin-bottom:15px;"><i class="fas fa-file-pdf"></i> Send to PDF Generator</h3>
+<button class="btn-primary" id="sendBtn">
+<i class="fas fa-arrow-right"></i> Use These Work IDs for PDF Generation
+</button>
+</div>
+</div>
+
+<div class="footer">
+<i class="fas fa-open-library"></i> Data from OpenLibrary • Real user activity • Work IDs ready
+</div>
+</div>
+
+<script>
+// ===== ELEMENTS =====
+const resultContainer = document.getElementById('resultContainer');
+const workIdOutput = document.getElementById('workIdOutput');
+const countInfo = document.getElementById('countInfo');
+const fetchBtn = document.getElementById('fetchBtn');
+const copyBtn = document.getElementById('copyBtn');
+const clearBtn = document.getElementById('clearBtn');
+const sendBtn = document.getElementById('sendBtn');
+const timeRange = document.getElementById('timeRange');
+const limitInput = document.getElementById('limit');
+const tabs = document.querySelectorAll('.tab');
+
+// ===== VARIABEL =====
+let allWorkIds = [];
+let currentType = 'want_to_read';
+let currentData = [];
+
+// ===== FUNCTION FETCH TRENDING =====
+async function fetchTrending() {
+resultContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i><p>Loading trending books...</p></div>';
+
+try {
+// Mapping parameter
+const typeMapping = {
+'want_to_read': 'want_to_read',
+'already_read': 'already_read',
+'currently_reading': 'currently_reading'
+};
+
+const timeMapping = {
+'now': 'now',
+'day': 'day',
+'week': 'week',
+'month': 'month',
+'year': 'year'
+};
+
+// URL API OpenLibrary untuk trending
+const url = `https://openlibrary.org/trending/${typeMapping[currentType]}.json?time_range=${timeMapping[timeRange.value]}&limit=${limitInput.value}`;
+
+const response = await fetch(url);
+if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+const data = await response.json();
+
+if (data.works && data.works.length > 0) {
+const books = data.works.map(work => ({
+workId: work.key.replace('/works/', ''),
+title: work.title || 'Unknown Title',
+author: work.author_name ? work.author_name[0] : 'Unknown Author',
+coverId: work.cover_id,
+rating: work.ratings_average,
+ratingsCount: work.ratings_count,
+wantToRead: work.want_to_read_count,
+alreadyRead: work.already_read_count,
+currentlyReading: work.currently_reading_count
+}));
+
+// Tampilkan buku
+let html = '<div class="book-list">';
+books.slice(0, 20).forEach(book => {
+const coverUrl = book.coverId ? `https://covers.openlibrary.org/b/id/${book.coverId}-S.jpg` : 'https://covers.openlibrary.org/b/id/12389591-S.jpg';
+
+// Hitung aktivitas tertinggi
+let activity = '';
+if (currentType === 'want_to_read') activity = `📚 ${book.wantToRead || 0} want`;
+else if (currentType === 'already_read') activity = `✅ ${book.alreadyRead || 0} read`;
+else activity = `📖 ${book.currentlyReading || 0} reading`;
+
+html += `
+<div class="book-item" onclick="addWorkId('${book.workId}')">
+<img src="${coverUrl}" onerror="this.src='https://covers.openlibrary.org/b/id/12389591-S.jpg'">
+<div class="book-info">
+<div class="book-title">${book.title.substring(0, 60)}${book.title.length > 60 ? '...' : ''}</div>
+<div class="book-author">${book.author}</div>
+<div class="book-id">${book.workId}</div>
+<div class="book-meta">⭐ ${book.rating ? book.rating.toFixed(1) : 'N/A'} • ${activity}</div>
+</div>
+</div>
+`;
+});
+html += '</div>';
+resultContainer.innerHTML = html;
+
+// Auto add to collection
+const newWorkIds = books.map(b => b.workId);
+allWorkIds = [...new Set([...allWorkIds, ...newWorkIds])];
+updateOutput();
+currentData = books;
+
+} else {
+resultContainer.innerHTML = '<div class="status">❌ No data found</div>';
+}
+
+} catch (error) {
+console.error(error);
+resultContainer.innerHTML = `<div class="status">❌ Error: ${error.message}</div>`;
+}
+}
+
+// ===== TAMBAH WORK ID (klik buku) =====
+window.addWorkId = function(workId) {
+if (!allWorkIds.includes(workId)) {
+allWorkIds.push(workId);
+updateOutput();
+}
+};
+
+// ===== UPDATE OUTPUT =====
+function updateOutput() {
+workIdOutput.value = allWorkIds.join('\n');
+countInfo.innerHTML = `📊 Total: ${allWorkIds.length} unique Work IDs`;
+}
+
+// ===== COPY =====
+function copyToClipboard() {
+if (allWorkIds.length > 0) {
+navigator.clipboard.writeText(allWorkIds.join('\n')).then(() => {
+alert(`✅ ${allWorkIds.length} Work IDs copied!`);
+});
+} else {
+alert('No Work IDs to copy');
+}
+}
+
+// ===== EVENT =====
+tabs.forEach(tab => {
+tab.addEventListener('click', () => {
+tabs.forEach(t => t.classList.remove('active'));
+tab.classList.add('active');
+currentType = tab.dataset.type;
+fetchTrending();
+});
+});
+
+fetchBtn.addEventListener('click', fetchTrending);
+
+copyBtn.addEventListener('click', copyToClipboard);
+
+clearBtn.addEventListener('click', () => {
+workIdOutput.value = '';
+allWorkIds = [];
+countInfo.innerHTML = '📊 Total: 0 Work IDs';
+});
+
+sendBtn.addEventListener('click', () => {
+if (allWorkIds.length > 0) {
+localStorage.setItem('trendingWorkIds', JSON.stringify(allWorkIds));
+alert(`✅ ${allWorkIds.length} Work IDs saved! Open PDF Generator and use them.`);
+window.open('generator.html', '_blank');
+} else {
+alert('No Work IDs to send');
+}
+});
+
+// ===== LOAD PERTAMA =====
+fetchTrending();
+</script>
+</body>
+</html>
